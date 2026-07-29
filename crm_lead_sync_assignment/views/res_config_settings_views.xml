@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="res_config_settings_view_form_crm_lead_sync" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.inherit.crm.lead.sync</field>
+            <field name="model">res.config.settings</field>
+            <field name="priority" eval="25"/>
+            <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form" position="inside">
+                    <app data-string="Google Sheets Lead Sync" string="Google Sheets Lead Sync" name="crm_lead_sync_assignment">
+                        <block title="Google Sheets API &amp; Synchronization Configuration" id="google_sheets_sync_config">
+                            <setting id="setting_spreadsheet_1" string="Google Spreadsheet 1 (Document 1)" help="Spreadsheet ID and Tab Name for Sheet 1.">
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <label for="google_spreadsheet_1_id" class="col-lg-3 o_light_label" string="Spreadsheet 1 ID"/>
+                                        <field name="google_spreadsheet_1_id" placeholder="e.g. 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"/>
+                                    </div>
+                                    <div class="row mt8">
+                                        <label for="google_sheet_1_name" class="col-lg-3 o_light_label" string="Sheet 1 Tab Name"/>
+                                        <field name="google_sheet_1_name" placeholder="Sheet1"/>
+                                    </div>
+                                </div>
+                            </setting>
+                            <setting id="setting_spreadsheet_2" string="Google Spreadsheet 2 (Document 2)" help="Spreadsheet ID and Tab Name for Sheet 2.">
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <label for="google_spreadsheet_2_id" class="col-lg-3 o_light_label" string="Spreadsheet 2 ID"/>
+                                        <field name="google_spreadsheet_2_id" placeholder="e.g. 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"/>
+                                    </div>
+                                    <div class="row mt8">
+                                        <label for="google_sheet_2_name" class="col-lg-3 o_light_label" string="Sheet 2 Tab Name"/>
+                                        <field name="google_sheet_2_name" placeholder="Sheet1"/>
+                                    </div>
+                                </div>
+                            </setting>
+                            <setting id="setting_service_account_json" string="Google Service Account JSON Key (Optional)" help="Optional. Leave empty if Google Sheets share permission is set to 'Anyone with the link can view'.">
+                                <field name="google_service_account_json" rows="4" placeholder="Optional: Paste Service Account JSON key if sheet is private..."/>
+                                <div class="text-muted small mt-1">
+                                    <i class="fa fa-info-circle text-primary me-1"/> <b>Zero-Config Option:</b> Leave this box empty if your Google Sheets share permission is set to <i>"Anyone with the link can view"</i>.
+                                </div>
+                            </setting>
+                            <setting id="setting_actions" string="Actions &amp; Test Connection" help="Test Google connection or trigger immediate synchronization.">
+                                <div class="mt16">
+                                    <button name="action_test_google_connection" type="object" string="Test Connection" class="btn-primary icon fa-plug"/>
+                                    <button name="action_manual_lead_sync" type="object" string="Manual Sync Now" class="btn-secondary icon fa-refresh ms-2"/>
+                                </div>
+                            </setting>
+                        </block>
+                    </app>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="action_crm_lead_sync_config_settings" model="ir.actions.act_window">
+            <field name="name">Google Sheet Settings</field>
+            <field name="res_model">res.config.settings</field>
+            <field name="view_mode">form</field>
+            <field name="target">inline</field>
+            <field name="context">{'module': 'crm_lead_sync_assignment', 'bin_size': False}</field>
+        </record>
+    </data>
+</odoo>

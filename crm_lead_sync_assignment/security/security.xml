@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="module_category_custom_crm" model="ir.module.category">
+            <field name="name">Custom CRM</field>
+            <field name="description">Standalone CRM Lead Sync &amp; Assignment</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <record id="group_custom_crm_user" model="res.groups">
+            <field name="name">User (Own Leads Only)</field>
+            <field name="category_id" ref="module_category_custom_crm"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <record id="group_custom_crm_manager" model="res.groups">
+            <field name="name">Manager (All Leads)</field>
+            <field name="category_id" ref="module_category_custom_crm"/>
+            <field name="implied_ids" eval="[(4, ref('group_custom_crm_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Master Lead Tree View -->
+        <record id="view_crm_master_lead_tree" model="ir.ui.view">
+            <field name="name">crm.master.lead.tree</field>
+            <field name="model">crm.master.lead</field>
+            <field name="arch" type="xml">
+                <tree string="Master Leads Repository">
+                    <field name="name" string="Full Name"/>
+                    <field name="phone"/>
+                    <field name="whatsapp_number"/>
+                    <field name="email"/>
+                    <field name="city"/>
+                    <field name="source_sheet"/>
+                    <field name="assigned_employee_id" string="Assigned Salesperson"/>
+                    <field name="lead_status" widget="badge" decoration-info="lead_status == 'new'" decoration-success="lead_status == 'imported'" decoration-warning="lead_status == 'assigned'" decoration-danger="lead_status == 'duplicate'"/>
+                    <field name="is_imported"/>
+                    <field name="created_time"/>
+                    <field name="sync_time"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Master Lead Form View -->
+        <record id="view_crm_master_lead_form" model="ir.ui.view">
+            <field name="name">crm.master.lead.form</field>
+            <field name="model">crm.master.lead</field>
+            <field name="arch" type="xml">
+                <form string="Master Lead Record">
+                    <header>
+                        <button name="action_create_crm_lead" string="Assign &amp; Import to CRM" type="object" class="btn-primary" icon="fa-user-plus" invisible="is_imported"/>
+                        <field name="lead_status" widget="statusbar" statusbar_visible="new,assigned,imported"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" string="Lead Full Name"/>
+                            <h1>
+                                <field name="name" placeholder="Full Name..."/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group string="Contact Details">
+                                <field name="phone"/>
+                                <field name="whatsapp_number"/>
+                                <field name="email"/>
+                                <field name="city"/>
+                                <field name="inbox_url" widget="url"/>
+                            </group>
+                            <group string="Synchronization &amp; Status">
+                                <field name="source_sheet"/>
+                                <field name="created_time"/>
+                                <field name="sync_time"/>
+                                <field name="assigned_employee_id" string="Assigned Salesperson"/>
+                                <field name="assigned_user_id"/>
+                                <field name="is_assigned"/>
+                                <field name="is_imported"/>
+                                <field name="crm_lead_id" readonly="1"/>
+                            </group>
+                        </group>
+                        <group string="Marketing &amp; Segmentation">
+                            <group>
+                                <field name="platform"/>
+                                <field name="campaign_name"/>
+                                <field name="ad_name"/>
+                                <field name="adset_name"/>
+                                <field name="form_name"/>
+                            </group>
+                            <group>
+                                <field name="segment"/>
+                                <field name="equity"/>
+                                <field name="trading_experience"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- Master Lead Search View -->
+        <record id="view_crm_master_lead_search" model="ir.ui.view">
+            <field name="name">crm.master.lead.search</field>
+            <field name="model">crm.master.lead</field>
+            <field name="arch" type="xml">
+                <search string="Search Master Leads">
+                    <field name="name" string="Name / Phone / Email" filter_domain="['|', '|', ('name', 'ilike', self), ('phone', 'ilike', self), ('email', 'ilike', self)]"/>
+                    <field name="source_sheet"/>
+                    <field name="campaign_name"/>
+                    <field name="assigned_employee_id"/>
+
+                    <filter string="Unimported Leads" name="filter_unimported" domain="[('is_imported', '=', False)]"/>
+                    <filter string="Imported to CRM" name="filter_imported" domain="[('is_imported', '=', True)]"/>
+                    <separator/>
+                    <filter string="Sheet 1" name="filter_sheet1" domain="[('source_sheet', '=', 'Sheet 1')]"/>
+                    <filter string="Sheet 2" name="filter_sheet2" domain="[('source_sheet', '=', 'Sheet 2')]"/>
+
+                    <group expand="0" string="Group By">
+                        <filter string="Source Sheet" name="group_by_sheet" context="{'group_by': 'source_sheet'}"/>
+                        <filter string="Lead Status" name="group_by_status" context="{'group_by': 'lead_status'}"/>
+                        <filter string="Assigned Salesperson" name="group_by_employee" context="{'group_by': 'assigned_employee_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Master Lead Action -->
+        <record id="action_crm_master_lead" model="ir.actions.act_window">
+            <field name="name">Master Leads</field>
+            <field name="res_model">crm.master.lead</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_crm_master_lead_search"/>
+            <field name="context">{'search_default_filter_unimported': 1}</field>
+        </record>
+
+        <!-- Multi-Record Action for Mass Assign & Import -->
+        <record id="action_mass_assign_import_master_leads" model="ir.actions.server">
+            <field name="name">Assign &amp; Import Selected Leads to CRM</field>
+            <field name="model_id" ref="model_crm_master_lead"/>
+            <field name="binding_model_id" ref="model_crm_master_lead"/>
+            <field name="binding_view_types">list,form</field>
+            <field name="state">code</field>
+            <field name="code">
+                action = records.action_create_crm_lead()
+            </field>
+        </record>
+    </data>
+</odoo>

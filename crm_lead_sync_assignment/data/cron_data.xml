@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Automated Scheduled Action: Google Sheets Lead Sync -->
+        <record id="ir_cron_sync_google_sheets_leads" model="ir.cron">
+            <field name="name">CRM: Sync Google Sheets Leads Every 5 Mins</field>
+            <field name="model_id" ref="model_crm_master_lead"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_sync_google_sheets()</field>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="active" eval="True"/>
+            <field name="doall" eval="False"/>
+        </record>
+
+        <!-- Sequences for Logs & History -->
+        <record id="seq_crm_lead_sync_log" model="ir.sequence">
+            <field name="name">CRM Sync Log Sequence</field>
+            <field name="code">crm.lead.sync.log</field>
+            <field name="prefix">SYNC-LOG/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_crm_lead_import_history" model="ir.sequence">
+            <field name="name">CRM Import History Sequence</field>
+            <field name="code">crm.lead.import.history</field>
+            <field name="prefix">IMPORT-HIST/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

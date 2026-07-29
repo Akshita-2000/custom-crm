@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Custom CRM Lead Kanban View -->
+        <record id="view_custom_crm_lead_kanban" model="ir.ui.view">
+            <field name="name">custom.crm.lead.kanban</field>
+            <field name="model">custom.crm.lead</field>
+            <field name="arch" type="xml">
+                <kanban default_group_by="stage" class="o_kanban_small_column o_opportunity_kanban" sample="1">
+                    <field name="id"/>
+                    <field name="name"/>
+                    <field name="partner_name"/>
+                    <field name="phone"/>
+                    <field name="email"/>
+                    <field name="employee_id"/>
+                    <field name="user_id"/>
+                    <field name="stage"/>
+                    <field name="priority"/>
+                    <field name="color"/>
+                    <field name="platform"/>
+                    <field name="campaign_name"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_global_click oe_kanban_card #{kanban_color(record.color.raw_value)}">
+                                <div class="o_dropdown_kanban dropdown">
+                                    <a class="dropdown-toggle o-no-caret btn" role="button" data-bs-toggle="dropdown" href="#" aria-label="Dropdown menu" title="Dropdown menu">
+                                        <span class="fa fa-ellipsis-v"/>
+                                    </a>
+                                    <div class="dropdown-menu" role="menu">
+                                        <t t-if="widget.editable"><a role="menuitem" type="edit" class="dropdown-item">Edit</a></t>
+                                        <t t-if="widget.deletable"><a role="menuitem" type="delete" class="dropdown-item">Delete</a></t>
+                                    </div>
+                                </div>
+                                <div class="oe_kanban_content">
+                                    <div class="o_kanban_record_title fw-bold fs-6">
+                                        <field name="name"/>
+                                    </div>
+                                    <div class="text_muted small">
+                                        <i class="fa fa-user me-1"/> <field name="partner_name"/>
+                                    </div>
+                                    <div t-if="record.phone.raw_value" class="text-muted small">
+                                        <i class="fa fa-phone me-1"/> <field name="phone"/>
+                                    </div>
+                                    <div t-if="record.email.raw_value" class="text-muted small">
+                                        <i class="fa fa-envelope me-1"/> <field name="email"/>
+                                    </div>
+                                    <div t-if="record.employee_id.raw_value" class="text-primary fw-bold small mt-1">
+                                        <i class="fa fa-id-badge me-1"/> <field name="employee_id"/>
+                                    </div>
+                                    <div t-if="record.platform.raw_value" class="badge bg-secondary mt-1">
+                                        <field name="platform"/>
+                                    </div>
+                                    <div class="o_kanban_record_bottom mt-2 d-flex justify-content-between align-items-center">
+                                        <div class="oe_kanban_bottom_left">
+                                            <field name="priority" widget="priority"/>
+                                        </div>
+                                        <div class="oe_kanban_bottom_right">
+                                            <field name="employee_id" widget="many2one_avatar"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Custom CRM Lead Tree View -->
+        <record id="view_custom_crm_lead_tree" model="ir.ui.view">
+            <field name="name">custom.crm.lead.tree</field>
+            <field name="model">custom.crm.lead</field>
+            <field name="arch" type="xml">
+                <tree string="Custom CRM Pipeline" decoration-info="stage == 'new'" decoration-warning="stage in ('contacted', 'not_pick_call', 'followup')" decoration-success="stage == 'won'" decoration-danger="stage in ('lost', 'junk')">
+                    <field name="name" string="Lead Title"/>
+                    <field name="partner_name" string="Full Name"/>
+                    <field name="phone"/>
+                    <field name="email"/>
+                    <field name="city"/>
+                    <field name="platform"/>
+                    <field name="campaign_name"/>
+                    <field name="priority" widget="priority"/>
+                    <field name="employee_id" string="Assigned Salesperson"/>
+                    <field name="stage" widget="badge" decoration-info="stage == 'new'" decoration-warning="stage in ('contacted', 'not_pick_call', 'followup')" decoration-success="stage == 'won'" decoration-danger="stage in ('lost', 'junk')"/>
+                    <field name="create_date" string="Imported On"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- Custom CRM Lead Form View -->
+        <record id="view_custom_crm_lead_form" model="ir.ui.view">
+            <field name="name">custom.crm.lead.form</field>
+            <field name="model">custom.crm.lead</field>
+            <field name="arch" type="xml">
+                <form string="Custom CRM Lead">
+                    <header>
+                        <button name="action_set_won" string="Mark Won" type="object" class="btn-success" invisible="stage == 'won'"/>
+                        <button name="action_set_lost" string="Mark Lost" type="object" class="btn-secondary" invisible="stage == 'lost'"/>
+                        <field name="stage" widget="statusbar" statusbar_visible="new,contacted,not_pick_call,followup,in_progress,won,lost,junk"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name" string="Lead Title"/>
+                            <h1>
+                                <field name="name" placeholder="Lead Title..."/>
+                            </h1>
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <span class="fw-bold text-muted">Priority:</span>
+                                <field name="priority" widget="priority"/>
+                            </div>
+                        </div>
+                        <group>
+                            <group string="Contact Details">
+                                <field name="partner_name"/>
+                                <field name="phone"/>
+                                <field name="mobile"/>
+                                <field name="email"/>
+                                <field name="city"/>
+                                <field name="inbox_url" widget="url"/>
+                            </group>
+                            <group string="Pipeline &amp; Salesperson">
+                                <field name="employee_id" string="Assigned Salesperson" class="fw-bold fs-5 text-primary"/>
+                                <field name="user_id" string="User Account"/>
+                                <field name="source_sheet"/>
+                                <field name="master_lead_id" readonly="1"/>
+                            </group>
+                        </group>
+                        <group string="Marketing Details &amp; Profile">
+                            <group>
+                                <field name="platform"/>
+                                <field name="campaign_name"/>
+                                <field name="ad_name"/>
+                                <field name="adset_name"/>
+                            </group>
+                            <group>
+                                <field name="segment"/>
+                                <field name="equity"/>
+                                <field name="trading_experience"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Lead Description &amp; Metadata">
+                                <field name="description" widget="html"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- Custom CRM Lead Search View -->
+        <record id="view_custom_crm_lead_search" model="ir.ui.view">
+            <field name="name">custom.crm.lead.search</field>
+            <field name="model">custom.crm.lead</field>
+            <field name="arch" type="xml">
+                <search string="Search Custom CRM Leads">
+                    <field name="name" string="Lead Title / Name"/>
+                    <field name="partner_name"/>
+                    <field name="phone"/>
+                    <field name="email"/>
+                    <field name="employee_id"/>
+                    <field name="user_id"/>
+                    <field name="platform"/>
+                    <field name="campaign_name"/>
+
+                    <filter string="My Leads" name="filter_my_leads" domain="['|', ('employee_id.user_id', '=', uid), ('user_id', '=', uid)]"/>
+                    <separator/>
+                    <filter string="New Leads" name="filter_new" domain="[('stage', '=', 'new')]"/>
+                    <filter string="Not Pick Call" name="filter_not_pick_call" domain="[('stage', '=', 'not_pick_call')]"/>
+                    <filter string="Followup" name="filter_followup" domain="[('stage', '=', 'followup')]"/>
+                    <filter string="Junk" name="filter_junk" domain="[('stage', '=', 'junk')]"/>
+                    <filter string="Won" name="filter_won" domain="[('stage', '=', 'won')]"/>
+                    <filter string="Lost" name="filter_lost" domain="[('stage', '=', 'lost')]"/>
+
+                    <group expand="0" string="Group By">
+                        <filter string="Stage" name="group_by_stage" context="{'group_by': 'stage'}"/>
+                        <filter string="Assigned Salesperson" name="group_by_employee" context="{'group_by': 'employee_id'}"/>
+                        <filter string="Platform" name="group_by_platform" context="{'group_by': 'platform'}"/>
+                        <filter string="Campaign" name="group_by_campaign" context="{'group_by': 'campaign_name'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- Custom CRM Lead Action -->
+        <record id="action_custom_crm_lead" model="ir.actions.act_window">
+            <field name="name">Leads Pipeline</field>
+            <field name="res_model">custom.crm.lead</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="search_view_id" ref="view_custom_crm_lead_search"/>
+            <field name="context">{'search_default_group_by_stage': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No leads in the CRM Pipeline!
+                </p>
+                <p>
+                    Use the <b>Import Leads</b> wizard under <i>Lead Synchronization</i> to distribute master leads to your salespeople.
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>
