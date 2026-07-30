@@ -5,7 +5,7 @@
             <field name="name">crm.lead.sync.log.tree</field>
             <field name="model">crm.lead.sync.log</field>
             <field name="arch" type="xml">
-                <tree string="Sync Logs" decoration-success="status == 'success'" decoration-warning="status == 'warning'" decoration-danger="status == 'failed'">
+                <tree string="Sync Logs" export_xlsx="0" decoration-success="status == 'success'" decoration-warning="status == 'warning'" decoration-danger="status == 'failed'">
                     <field name="name"/>
                     <field name="sync_date"/>
                     <field name="triggered_by"/>

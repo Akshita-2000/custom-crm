@@ -71,7 +71,7 @@
             <field name="name">custom.crm.lead.tree</field>
             <field name="model">custom.crm.lead</field>
             <field name="arch" type="xml">
-                <tree string="Custom CRM Pipeline" decoration-info="stage == 'new'" decoration-warning="stage in ('contacted', 'not_pick_call', 'followup')" decoration-success="stage == 'won'" decoration-danger="stage in ('lost', 'junk')">
+                <tree string="Custom CRM Pipeline" export_xlsx="0" decoration-info="stage == 'new'" decoration-warning="stage in ('contacted', 'not_pick_call', 'followup')" decoration-success="stage == 'won'" decoration-danger="stage in ('lost', 'junk')">
                     <field name="name" string="Lead Title"/>
                     <field name="partner_name" string="Full Name"/>
                     <field name="phone"/>

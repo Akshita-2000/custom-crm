@@ -14,10 +14,11 @@
                   action="action_custom_crm_lead"
                   sequence="10"/>
 
-        <!-- Submenu Header 2: Lead Synchronization -->
+        <!-- Submenu Header 2: Lead Synchronization (Manager Only) -->
         <menuitem id="menu_crm_lead_sync_root"
                   name="Lead Synchronization"
                   parent="menu_custom_crm_root"
+                  groups="sales_team.group_sale_manager"
                   sequence="20"/>
 
         <!-- Master Leads -->

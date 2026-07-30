@@ -6,7 +6,7 @@
             <field name="name">crm.master.lead.tree</field>
             <field name="model">crm.master.lead</field>
             <field name="arch" type="xml">
-                <tree string="Master Leads Repository">
+                <tree string="Master Leads Repository" export_xlsx="0">
                     <field name="name" string="Full Name"/>
                     <field name="phone"/>
                     <field name="whatsapp_number"/>

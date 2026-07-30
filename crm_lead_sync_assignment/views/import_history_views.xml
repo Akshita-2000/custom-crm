@@ -5,7 +5,7 @@
             <field name="name">crm.lead.import.history.tree</field>
             <field name="model">crm.lead.import.history</field>
             <field name="arch" type="xml">
-                <tree string="Import History">
+                <tree string="Import History" export_xlsx="0">
                     <field name="name"/>
                     <field name="import_date"/>
                     <field name="user_id"/>
@@ -46,7 +46,7 @@
                             </page>
                             <page string="Allocation Breakdown Matrix">
                                 <field name="line_ids" readonly="1">
-                                    <tree>
+                                    <tree export_xlsx="0">
                                         <field name="user_id" string="Salesperson"/>
                                         <field name="allocated_count" string="Allocated Lead Count"/>
                                     </tree>
