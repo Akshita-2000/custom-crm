@@ -243,7 +243,7 @@ class CrmMasterLead(models.Model):
                 continue
 
             segment = rec.get('in_which_segment_do_you_work') or rec.get('segment') or rec.get('Segment') or ''
-            equity = rec.get('how_much_your_equ!ty') or rec.get('equity') or rec.get('Equity') or ''
+            equity = rec.get('how_much_your_equity') or rec.get('how_much_your_equ!ty') or rec.get('equity') or rec.get('Equity') or ''
             trading_exp = rec.get('do_you_have_any_trading_experience?') or rec.get('trading_experience') or ''
             raw_time = rec.get('created_time') or rec.get('Created Time') or ''
 

@@ -98,7 +98,7 @@ class GoogleSheetsServiceHelper:
 
                 reader = csv.DictReader(io.StringIO(content))
                 records = list(reader)
-                if records:
+                if reader.fieldnames is not None:
                     return records
             except UserError as ue:
                 raise ue
