@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Custom CRM Lead Kanban View Inherit -->
+        <record id="view_custom_crm_lead_kanban_voiso" model="ir.ui.view">
+            <field name="name">custom.crm.lead.kanban.inherit.voiso</field>
+            <field name="model">custom.crm.lead</field>
+            <field name="inherit_id" ref="crm_lead_sync_assignment.view_custom_crm_lead_kanban"/>
+            <field name="arch" type="xml">
+                <field name="phone" position="after">
+                    <field name="phone_masked"/>
+                </field>
+
+                <xpath expr="//div[hasclass('text-muted') and contains(., 'field name=&quot;phone&quot;') or @t-if='record.phone.raw_value']" position="replace">
+                    <div t-if="record.phone.raw_value" class="text-muted small d-flex align-items-center justify-content-between my-1">
+                        <span class="fw-bold"><i class="fa fa-phone me-1"/> <field name="phone_masked"/></span>
+                        <button name="action_voiso_call_phone" 
+                                type="object" 
+                                class="btn btn-sm btn-success py-0 px-2 text-white shadow-sm fw-bold" 
+                                title="Call Customer via Voiso">
+                            <i class="fa fa-phone me-1"/> Call
+                        </button>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Custom CRM Lead Tree View Inherit -->
+        <record id="view_custom_crm_lead_tree_voiso" model="ir.ui.view">
+            <field name="name">custom.crm.lead.tree.inherit.voiso</field>
+            <field name="model">custom.crm.lead</field>
+            <field name="inherit_id" ref="crm_lead_sync_assignment.view_custom_crm_lead_tree"/>
+            <field name="arch" type="xml">
+                <field name="phone" position="replace">
+                    <field name="phone_masked"/>
+                </field>
+            </field>
+        </record>
+
+        <!-- Custom CRM Lead Form View Inherit -->
+        <record id="view_custom_crm_lead_form_voiso" model="ir.ui.view">
+            <field name="name">custom.crm.lead.form.inherit.voiso</field>
+            <field name="model">custom.crm.lead</field>
+            <field name="inherit_id" ref="crm_lead_sync_assignment.view_custom_crm_lead_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                    <button name="action_voiso_call_phone" 
+                            string="Call Customer (Voiso)" 
+                            type="object" 
+                            class="btn-primary" 
+                            icon="fa-phone" 
+                            invisible="not phone"/>
+                </xpath>
+
+                <xpath expr="//field[@name='phone']" position="replace">
+                    <label for="phone" string="Phone Number"/>
+                    <div class="o_row">
+                        <field name="phone" widget="phone" placeholder="e.g. +91 9876543210"/>
+                        <button name="action_voiso_call_phone"
+                                type="object"
+                                title="Call via Voiso"
+                                icon="fa-phone"
+                                class="btn btn-sm btn-primary ms-1"
+                                invisible="not phone"/>
+                    </div>
+                </xpath>
+
+                <xpath expr="//field[@name='mobile']" position="replace">
+                    <label for="mobile" string="WhatsApp / Mobile"/>
+                    <div class="o_row">
+                        <field name="mobile" widget="phone" placeholder="e.g. +91 9876543210"/>
+                        <button name="action_voiso_call_mobile"
+                                type="object"
+                                title="Call via Voiso"
+                                icon="fa-mobile"
+                                class="btn btn-sm btn-primary ms-1"
+                                invisible="not mobile"/>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

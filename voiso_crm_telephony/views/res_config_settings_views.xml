@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="res_config_settings_view_form_voiso" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.inherit.voiso</field>
+            <field name="model">res.config.settings</field>
+            <field name="priority" eval="25"/>
+            <field name="inherit_id" ref="crm.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//app[@name='crm']" position="inside">
+                    <block title="Voiso Click-to-Call Telephony" id="voiso_crm_settings">
+                        <setting id="setting_voiso_enabled" help="Enable Voiso telephony call triggers from CRM leads &amp; contacts.">
+                            <field name="voiso_enabled"/>
+                            <div class="content-group" invisible="not voiso_enabled">
+                                <div class="mt16 row">
+                                    <label for="voiso_base_url" string="Voiso Base URL" class="col-lg-3 o_light_label"/>
+                                    <field name="voiso_base_url" placeholder="https://wekotrade.voiso.com/api/v4" class="col-lg-9"/>
+                                </div>
+                                <div class="mt8 row">
+                                    <label for="voiso_api_key" string="Voiso API Key" class="col-lg-3 o_light_label"/>
+                                    <field name="voiso_api_key" password="True" placeholder="Enter Voiso Bearer API Key..." class="col-lg-9"/>
+                                </div>
+                                <div class="mt8 row">
+                                    <label for="voiso_default_country_code" string="Default Country Code" class="col-lg-3 o_light_label"/>
+                                    <field name="voiso_default_country_code" placeholder="e.g. 91" class="col-lg-9"/>
+                                </div>
+                                <div class="mt16">
+                                    <button name="action_sync_voiso_users" 
+                                            string="Sync &amp; Auto-Map Voiso Users" 
+                                            type="object" 
+                                            icon="fa-refresh" 
+                                            class="btn-primary"/>
+                                    <span class="text-muted ms-2">Auto-maps Odoo users with Voiso User IDs by matching names/emails.</span>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

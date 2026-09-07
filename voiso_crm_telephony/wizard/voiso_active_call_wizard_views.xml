@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_voiso_active_call_wizard_form" model="ir.ui.view">
+            <field name="name">voiso.active.call.wizard.form</field>
+            <field name="model">voiso.active.call.wizard</field>
+            <field name="arch" type="xml">
+                <form string="📞 Active Voiso Call">
+                    <div class="alert alert-success text-center p-3 mb-3 border-0 shadow-sm rounded-3">
+                        <div class="fs-4 fw-bold text-success mb-1">
+                            <i class="fa fa-phone fa-spin me-2"/> 🟢 Call in Progress...
+                        </div>
+                        <div class="text-muted small">
+                            Connected via Voiso Telephony Network
+                        </div>
+                    </div>
+
+                    <div class="card p-3 mb-3 border-light bg-light rounded-3 text-center">
+                        <div class="text-muted text-uppercase small fw-bold mb-1">Customer</div>
+                        <div class="fs-3 fw-bold text-dark mb-2">
+                            <field name="customer_name" readonly="1"/>
+                        </div>
+
+                        <div class="text-muted text-uppercase small fw-bold mb-1">Dialed Phone</div>
+                        <div class="fs-4 fw-bold text-primary mb-2">
+                            <field name="phone_masked" readonly="1"/>
+                        </div>
+
+                        <div class="text-muted small">
+                            Voiso Call ID: <code class="fw-bold"><field name="call_id" readonly="1"/></code>
+                        </div>
+                    </div>
+
+                    <footer class="d-flex justify-content-center gap-2 pt-2">
+                        <button name="action_end_call" 
+                                string="🔴 End Call / Cut" 
+                                type="object" 
+                                class="btn btn-danger btn-lg px-5 py-2 fw-bold rounded-pill shadow-sm"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>
