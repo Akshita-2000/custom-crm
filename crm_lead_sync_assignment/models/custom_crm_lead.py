@@ -17,6 +17,8 @@ class CustomCrmLead(models.Model):
     mobile = fields.Char(string="WhatsApp / Mobile", tracking=True)
     email = fields.Char(string="Email Address", tracking=True, index=True)
     city = fields.Char(string="City")
+    country_code = fields.Char(string="Country Code", tracking=True)
+    is_premium = fields.Boolean(string="Is Premium Lead", default=False, index=True, tracking=True)
     
     segment = fields.Char(string="Segment")
     equity = fields.Char(string="Equity / Capital")

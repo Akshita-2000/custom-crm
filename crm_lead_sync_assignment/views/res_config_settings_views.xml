@@ -34,6 +34,18 @@
                                     </div>
                                 </div>
                             </setting>
+                            <setting id="setting_premium_spreadsheet" string="Premium Google Spreadsheet" help="Spreadsheet ID and Tab Name for Premium Leads Sheet.">
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <label for="google_premium_spreadsheet_id" class="col-lg-3 o_light_label" string="Premium Spreadsheet ID"/>
+                                        <field name="google_premium_spreadsheet_id" placeholder="e.g. 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"/>
+                                    </div>
+                                    <div class="row mt8">
+                                        <label for="google_premium_sheet_name" class="col-lg-3 o_light_label" string="Premium Sheet Tab Name"/>
+                                        <field name="google_premium_sheet_name" placeholder="Sheet1"/>
+                                    </div>
+                                </div>
+                            </setting>
                             <setting id="setting_service_account_json" string="Google Service Account JSON Key (Optional)" help="Optional. Leave empty if Google Sheets share permission is set to 'Anyone with the link can view'.">
                                 <field name="google_service_account_json" rows="4" placeholder="Optional: Paste Service Account JSON key if sheet is private..."/>
                                 <div class="text-muted small mt-1">

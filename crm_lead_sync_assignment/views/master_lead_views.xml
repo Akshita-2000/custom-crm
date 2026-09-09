@@ -109,7 +109,18 @@
             <field name="res_model">crm.master.lead</field>
             <field name="view_mode">tree,form</field>
             <field name="search_view_id" ref="view_crm_master_lead_search"/>
+            <field name="domain">[('is_premium', '=', False)]</field>
             <field name="context">{'search_default_filter_unimported': 1}</field>
+        </record>
+
+        <!-- Master Premium Leads Action -->
+        <record id="action_crm_master_premium_lead" model="ir.actions.act_window">
+            <field name="name">Master Premium Leads</field>
+            <field name="res_model">crm.master.lead</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_crm_master_lead_search"/>
+            <field name="domain">[('is_premium', '=', True)]</field>
+            <field name="context">{'search_default_filter_unimported': 1, 'default_is_premium': True}</field>
         </record>
 
         <!-- Multi-Record Action for Mass Assign & Import -->

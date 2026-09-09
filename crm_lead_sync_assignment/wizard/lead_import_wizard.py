@@ -18,6 +18,11 @@ class CrmLeadImportWizard(models.TransientModel):
         store=False,
         help="Sum of lead counts entered for all salespeople."
     )
+    is_premium = fields.Boolean(
+        string="Is Premium Import",
+        default=False,
+        help="If set, imports from Master Premium Leads."
+    )
     line_ids = fields.One2many(
         'crm.lead.import.wizard.line',
         'wizard_id',
@@ -33,8 +38,14 @@ class CrmLeadImportWizard(models.TransientModel):
     def default_get(self, fields_list):
         res = super(CrmLeadImportWizard, self).default_get(fields_list)
         
-        # Load total unimported leads count
-        unimported_leads = self.env['crm.master.lead'].search([('is_imported', '=', False)])
+        is_premium_flag = self._context.get('default_is_premium', False)
+        res['is_premium'] = is_premium_flag
+
+        # Load total unimported leads count based on premium flag
+        unimported_leads = self.env['crm.master.lead'].search([
+            ('is_imported', '=', False),
+            ('is_premium', '=', is_premium_flag)
+        ])
         res['total_unimported_leads'] = len(unimported_leads)
 
         # Load all active Employees (hr.employee)
@@ -67,7 +78,10 @@ class CrmLeadImportWizard(models.TransientModel):
         """
         self.ensure_one()
 
-        unimported_leads = self.env['crm.master.lead'].search([('is_imported', '=', False)], order='id asc')
+        unimported_leads = self.env['crm.master.lead'].search([
+            ('is_imported', '=', False),
+            ('is_premium', '=', self.is_premium)
+        ], order='id asc')
         available_count = len(unimported_leads)
 
         if available_count == 0:
@@ -147,6 +161,8 @@ class CrmLeadImportWizard(models.TransientModel):
                     'mobile': master_lead.whatsapp_number or master_lead.phone,
                     'email': master_lead.email,
                     'city': master_lead.city,
+                    'country_code': master_lead.country_code,
+                    'is_premium': master_lead.is_premium,
                     'segment': master_lead.segment,
                     'equity': master_lead.equity,
                     'trading_experience': master_lead.trading_experience,

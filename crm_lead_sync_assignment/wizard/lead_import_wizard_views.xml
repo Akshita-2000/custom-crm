@@ -41,6 +41,15 @@
             <field name="res_model">crm.lead.import.wizard</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
+            <field name="context">{'default_is_premium': False}</field>
+        </record>
+
+        <record id="action_crm_premium_lead_import_wizard" model="ir.actions.act_window">
+            <field name="name">Import &amp; Assign Premium Leads</field>
+            <field name="res_model">crm.lead.import.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+            <field name="context">{'default_is_premium': True}</field>
         </record>
     </data>
 </odoo>

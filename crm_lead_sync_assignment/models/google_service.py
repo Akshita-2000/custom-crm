@@ -65,7 +65,7 @@ class GoogleSheetsServiceHelper:
     def fetch_public_sheet_csv(cls, spreadsheet_id, sheet_name=None):
         """
         Fetches sheet data directly via Google Sheets Public CSV Export URL with smart endpoint fallbacks.
-        Supports full URL pasting and auto-extracts Spreadsheet ID.
+        Supports full URL pasting and auto-extracts Spreadsheet ID or Published web links.
         """
         clean_id = cls._clean_spreadsheet_id(spreadsheet_id)
         if not clean_id:
@@ -73,17 +73,23 @@ class GoogleSheetsServiceHelper:
 
         urls_to_try = []
         
-        # Priority 1: Primary export endpoint (Fetches first tab automatically, 100% reliable!)
-        urls_to_try.append(f"https://docs.google.com/spreadsheets/d/{clean_id}/export?format=csv")
+        # If user pasted direct published web URL
+        if clean_id.startswith('http'):
+            urls_to_try.append(clean_id)
+            if 'export?' not in clean_id and 'pub?' not in clean_id:
+                urls_to_try.append(clean_id.rstrip('/') + '/pub?output=csv')
 
-        # Priority 2: Tab name specific endpoints
+        # Standard Google Sheet export endpoints
+        urls_to_try.append(f"https://docs.google.com/spreadsheets/d/{clean_id}/export?format=csv")
+        
+        # Tab name specific endpoints
         if sheet_name and str(sheet_name).strip():
             s_name = str(sheet_name).strip()
             encoded_sheet = urllib.parse.quote(s_name)
             urls_to_try.append(f"https://docs.google.com/spreadsheets/d/{clean_id}/export?format=csv&sheet={encoded_sheet}")
             urls_to_try.append(f"https://docs.google.com/spreadsheets/d/{clean_id}/gviz/tq?tqx=out:csv&sheet={encoded_sheet}")
 
-        # Priority 3: Fallback gviz endpoint
+        # Fallback gviz endpoint
         urls_to_try.append(f"https://docs.google.com/spreadsheets/d/{clean_id}/gviz/tq?tqx=out:csv")
 
         last_error = None
@@ -93,8 +99,8 @@ class GoogleSheetsServiceHelper:
                 if not content or len(content.strip()) == 0:
                     continue
 
-                if "<html" in content.lower() or "google.com/accounts" in content.lower():
-                    raise UserError(_("Spreadsheet is private. Please click 'Share' in Google Sheets and set access to 'Anyone with the link can view'."))
+                if "<html" in content.lower() or "google.com/accounts" in content.lower() or "login" in content.lower():
+                    raise UserError(_("Google Sheet access restricted (HTTP 401/404). Please in Google Sheets go to 'File' -> 'Share' -> 'Publish to web' (select CSV) or set Share permissions to 'Anyone with the link can view'."))
 
                 reader = csv.DictReader(io.StringIO(content))
                 records = list(reader)
@@ -103,10 +109,14 @@ class GoogleSheetsServiceHelper:
             except UserError as ue:
                 raise ue
             except Exception as e:
-                last_error = str(e)
+                err_str = str(e)
+                if '401' in err_str or '403' in err_str or 'Unauthorized' in err_str or 'Forbidden' in err_str:
+                    last_error = _("HTTP 401 Unauthorized / Forbidden: Google Sheet is Private. Please open Google Sheet -> File -> Share -> 'Publish to web' (format CSV) OR set Share permission to 'Anyone with the link can view'.")
+                else:
+                    last_error = err_str
                 continue
 
-        raise UserError(_("Could not fetch Google Sheet CSV. Please verify your Spreadsheet ID/URL. Technical detail: %s") % (last_error or 'HTTP 404 Not Found'))
+        raise UserError(_("Could not fetch Google Sheet CSV.\n\nReason: %s") % (last_error or 'HTTP 401 Unauthorized / Private Sheet access.'))
 
     @classmethod
     def get_service_account_token(cls, service_account_info):

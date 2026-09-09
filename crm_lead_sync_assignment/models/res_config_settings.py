@@ -28,6 +28,17 @@ class ResConfigSettings(models.TransientModel):
         config_parameter='crm_lead_sync.sheet_2_name',
         help="Tab name for Document 2."
     )
+    google_premium_spreadsheet_id = fields.Char(
+        string="Premium Google Spreadsheet ID",
+        config_parameter='crm_lead_sync.premium_spreadsheet_id',
+        help="Spreadsheet ID for Premium Leads."
+    )
+    google_premium_sheet_name = fields.Char(
+        string="Premium Sheet Tab Name",
+        default="Sheet1",
+        config_parameter='crm_lead_sync.premium_sheet_name',
+        help="Tab name for Premium Leads."
+    )
     google_service_account_json = fields.Text(
         string="Google Service Account JSON",
         help="Paste the full Google Service Account private key JSON contents here."
@@ -49,6 +60,8 @@ class ResConfigSettings(models.TransientModel):
             self.google_spreadsheet_1_id = GoogleSheetsServiceHelper._clean_spreadsheet_id(self.google_spreadsheet_1_id)
         if self.google_spreadsheet_2_id:
             self.google_spreadsheet_2_id = GoogleSheetsServiceHelper._clean_spreadsheet_id(self.google_spreadsheet_2_id)
+        if self.google_premium_spreadsheet_id:
+            self.google_premium_spreadsheet_id = GoogleSheetsServiceHelper._clean_spreadsheet_id(self.google_premium_spreadsheet_id)
             
         super(ResConfigSettings, self).set_values()
         param = self.env['ir.config_parameter'].sudo()
@@ -66,9 +79,11 @@ class ResConfigSettings(models.TransientModel):
         sheet1_name = self.google_sheet_1_name
         sp2_id = GoogleSheetsServiceHelper._clean_spreadsheet_id(self.google_spreadsheet_2_id)
         sheet2_name = self.google_sheet_2_name
+        prem_sp_id = GoogleSheetsServiceHelper._clean_spreadsheet_id(self.google_premium_spreadsheet_id)
+        prem_sheet_name = self.google_premium_sheet_name
         json_credentials = self.google_service_account_json
 
-        if not sp1_id and not sp2_id:
+        if not sp1_id and not sp2_id and not prem_sp_id:
             raise UserError(_("Please fill in at least one Google Spreadsheet ID."))
 
         msg_parts = []
@@ -90,6 +105,14 @@ class ResConfigSettings(models.TransientModel):
             except Exception as e:
                 msg_parts.append(_("Spreadsheet 2 Error (ID: %s): %s") % (sp2_id, str(e)))
 
+        if prem_sp_id:
+            try:
+                rec_prem = GoogleSheetsServiceHelper.fetch_sheet_values(prem_sp_id, prem_sheet_name, json_credentials)
+                msg_parts.append(_("Premium Spreadsheet (ID: %s): Success! Read %s rows.") % (prem_sp_id, len(rec_prem)))
+                has_success = True
+            except Exception as e:
+                msg_parts.append(_("Premium Spreadsheet Error (ID: %s): %s") % (prem_sp_id, str(e)))
+
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
@@ -108,13 +131,23 @@ class ResConfigSettings(models.TransientModel):
         res = self.env['crm.master.lead']._sync_leads_from_google_sheets(triggered_by='manual')
         inserted = res.get('inserted', 0)
         duplicates = res.get('duplicates', 0)
+        status = res.get('status', 'success')
+        
+        # Fetch latest sync log to show clear status
+        latest_log = self.env['crm.lead.sync.log'].search([], order='id desc', limit=1)
+        log_msg = latest_log.log_details if latest_log else ''
+
+        msg = _("Sync finished!\nInserted: %s new master leads.\nDuplicates Skipped: %s.") % (inserted, duplicates)
+        if status != 'success' and log_msg:
+            msg += _("\n\nDetails / Error:\n%s") % log_msg
+
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
                 'title': _("Manual Lead Synchronization Complete"),
-                'message': _("Sync finished successfully!\nInserted: %s new master leads.\nDuplicates Skipped: %s.") % (inserted, duplicates),
-                'type': 'success',
+                'message': msg,
+                'type': 'success' if status == 'success' else ('warning' if inserted > 0 else 'danger'),
                 'sticky': True,
             }
         }

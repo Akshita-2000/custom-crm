@@ -14,6 +14,13 @@
                   action="action_custom_crm_lead"
                   sequence="10"/>
 
+        <!-- Menu Item 1.5: Premium Leads -->
+        <menuitem id="menu_premium_crm_lead_pipeline"
+                  name="Premium Leads"
+                  parent="menu_custom_crm_root"
+                  action="action_premium_crm_lead"
+                  sequence="15"/>
+
         <!-- Submenu Header 2: Lead Synchronization (Manager Only) -->
         <menuitem id="menu_crm_lead_sync_root"
                   name="Lead Synchronization"
@@ -28,12 +35,26 @@
                   action="action_crm_master_lead"
                   sequence="10"/>
 
+        <!-- Master Premium Leads -->
+        <menuitem id="menu_crm_master_premium_lead"
+                  name="Master Premium Leads"
+                  parent="menu_crm_lead_sync_root"
+                  action="action_crm_master_premium_lead"
+                  sequence="15"/>
+
         <!-- Import Leads (Wizard Action) -->
         <menuitem id="menu_crm_lead_import_wizard"
                   name="Import Leads"
                   parent="menu_crm_lead_sync_root"
                   action="action_crm_lead_import_wizard"
                   sequence="20"/>
+
+        <!-- Import Premium Leads (Wizard Action) -->
+        <menuitem id="menu_crm_premium_lead_import_wizard"
+                  name="Import Premium Leads"
+                  parent="menu_crm_lead_sync_root"
+                  action="action_crm_premium_lead_import_wizard"
+                  sequence="25"/>
 
         <!-- Import History -->
         <menuitem id="menu_crm_lead_import_history"

@@ -193,6 +193,7 @@
             <field name="res_model">custom.crm.lead</field>
             <field name="view_mode">kanban,tree,form</field>
             <field name="search_view_id" ref="view_custom_crm_lead_search"/>
+            <field name="domain">[('is_premium', '=', False)]</field>
             <field name="context">{'search_default_group_by_stage': 1}</field>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
@@ -200,6 +201,24 @@
                 </p>
                 <p>
                     Use the <b>Import Leads</b> wizard under <i>Lead Synchronization</i> to distribute master leads to your salespeople.
+                </p>
+            </field>
+        </record>
+
+        <!-- Premium CRM Lead Action -->
+        <record id="action_premium_crm_lead" model="ir.actions.act_window">
+            <field name="name">Premium Leads Pipeline</field>
+            <field name="res_model">custom.crm.lead</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="search_view_id" ref="view_custom_crm_lead_search"/>
+            <field name="domain">[('is_premium', '=', True)]</field>
+            <field name="context">{'search_default_group_by_stage': 1, 'default_is_premium': True}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No premium leads in the Premium Leads Pipeline!
+                </p>
+                <p>
+                    Use the <b>Import Premium Leads</b> wizard under <i>Lead Synchronization</i> to distribute premium master leads to your salespeople.
                 </p>
             </field>
         </record>

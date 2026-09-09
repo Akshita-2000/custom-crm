@@ -18,6 +18,8 @@ class CrmMasterLead(models.Model):
     whatsapp_number = fields.Char(string="WhatsApp Number", index=True)
     email = fields.Char(string="Email Address", index=True)
     city = fields.Char(string="City")
+    country_code = fields.Char(string="Country Code", index=True)
+    is_premium = fields.Boolean(string="Is Premium Lead", default=False, index=True)
     
     segment = fields.Char(string="Segment")
     equity = fields.Char(string="Equity / Capital")
@@ -119,6 +121,8 @@ class CrmMasterLead(models.Model):
                 'mobile': master.whatsapp_number or master.phone,
                 'email': master.email,
                 'city': master.city,
+                'country_code': master.country_code,
+                'is_premium': master.is_premium,
                 'segment': master.segment,
                 'equity': master.equity,
                 'trading_experience': master.trading_experience,
@@ -180,6 +184,8 @@ class CrmMasterLead(models.Model):
         sheet1_name = params.get_param('crm_lead_sync.sheet_1_name', default='Sheet1')
         sp2_id = params.get_param('crm_lead_sync.spreadsheet_2_id')
         sheet2_name = params.get_param('crm_lead_sync.sheet_2_name', default='Sheet1')
+        premium_sp_id = params.get_param('crm_lead_sync.premium_spreadsheet_id')
+        premium_sheet_name = params.get_param('crm_lead_sync.premium_sheet_name', default='Sheet1')
         json_credentials = params.get_param('crm_lead_sync.service_account_json', default='')
 
         from .google_service import GoogleSheetsServiceHelper
@@ -188,6 +194,7 @@ class CrmMasterLead(models.Model):
         duplicate_count = 0
         sheet1_count = 0
         sheet2_count = 0
+        premium_sheet_count = 0
         error_msg = None
         status = 'success'
 
@@ -199,6 +206,7 @@ class CrmMasterLead(models.Model):
                 sheet1_count = len(raw_recs)
                 for r in raw_recs:
                     r['_source_sheet_label'] = 'Sheet 1'
+                    r['_is_premium'] = False
                 records_to_process.extend(raw_recs)
             except Exception as e:
                 _logger.error("Sync Error for Sheet 1: %s", str(e))
@@ -211,19 +219,48 @@ class CrmMasterLead(models.Model):
                 sheet2_count = len(raw_recs)
                 for r in raw_recs:
                     r['_source_sheet_label'] = 'Sheet 2'
+                    r['_is_premium'] = False
                 records_to_process.extend(raw_recs)
             except Exception as e:
                 _logger.error("Sync Error for Sheet 2: %s", str(e))
                 status = 'warning' if (records_to_process or sheet1_count > 0) else 'failed'
                 error_msg = (error_msg + f"\nSheet 2 Error: {str(e)}") if error_msg else f"Sheet 2 Error: {str(e)}"
 
+        if premium_sp_id:
+            try:
+                raw_recs = GoogleSheetsServiceHelper.fetch_sheet_values(premium_sp_id, premium_sheet_name, json_credentials)
+                premium_sheet_count = len(raw_recs)
+                for r in raw_recs:
+                    r['_source_sheet_label'] = 'Premium Sheet'
+                    r['_is_premium'] = True
+                records_to_process.extend(raw_recs)
+            except Exception as e:
+                _logger.error("Sync Error for Premium Sheet: %s", str(e))
+                status = 'warning' if (records_to_process or sheet1_count > 0 or sheet2_count > 0) else 'failed'
+                error_msg = (error_msg + f"\nPremium Sheet Error: {str(e)}") if error_msg else f"Premium Sheet Error: {str(e)}"
+
         vals_to_create = []
 
         for rec in records_to_process:
-            full_name = rec.get('full_name') or rec.get('Full Name') or rec.get('name') or rec.get('Name') or 'Lead'
-            phone = str(rec.get('phone_number') or rec.get('Phone Number') or rec.get('phone') or rec.get('Phone') or '').strip()
-            email = str(rec.get('email') or rec.get('Email') or '').strip()
+            full_name = rec.get('Name') or rec.get('screen_0_name_0') or rec.get('full_name') or rec.get('Full Name') or rec.get('name') or 'Lead'
+            raw_phone = rec.get('Phone') or rec.get('phone_number') or rec.get('Phone Number') or rec.get('phone') or ''
+            phone = str(raw_phone).strip()
+            if 'e' in phone.lower():
+                try:
+                    phone = str(int(float(phone)))
+                except Exception:
+                    pass
+
+            country_code = str(rec.get('CountryCode') or rec.get('country_code') or rec.get('Country Code') or '').strip()
+            email = str(rec.get('screen_0_email_1') or rec.get('email') or rec.get('Email') or '').strip()
             whatsapp = str(rec.get('share_your_whatsapp_number') or rec.get('whatsapp_number') or rec.get('WhatsApp Number') or '').strip()
+            if 'e' in whatsapp.lower():
+                try:
+                    whatsapp = str(int(float(whatsapp)))
+                except Exception:
+                    pass
+
+            is_premium_lead = bool(rec.get('_is_premium', False))
 
             check_phone = phone or whatsapp
             is_dup = False
@@ -242,27 +279,29 @@ class CrmMasterLead(models.Model):
                 duplicate_count += 1
                 continue
 
-            segment = rec.get('in_which_segment_do_you_work') or rec.get('segment') or rec.get('Segment') or ''
+            segment = rec.get('in_which_segment_do_you_work') or rec.get('segment') or rec.get('Segment') or rec.get('market_interest') or ''
             equity = rec.get('how_much_your_equity') or rec.get('how_much_your_equ!ty') or rec.get('equity') or rec.get('Equity') or ''
-            trading_exp = rec.get('do_you_have_any_trading_experience?') or rec.get('trading_experience') or ''
-            raw_time = rec.get('created_time') or rec.get('Created Time') or ''
+            trading_exp = rec.get('trading_experience') or rec.get('do_you_have_any_trading_experience?') or ''
+            raw_time = rec.get('CreatedDate') or rec.get('created_time') or rec.get('Created Time') or ''
 
             master_vals = {
                 'name': full_name,
                 'phone': phone,
+                'country_code': country_code,
                 'whatsapp_number': whatsapp,
                 'email': email,
                 'city': rec.get('city') or rec.get('City') or '',
                 'segment': segment,
                 'equity': equity,
                 'trading_experience': trading_exp,
-                'platform': rec.get('platform') or rec.get('Platform') or '',
+                'platform': rec.get('platform') or rec.get('Platform') or rec.get('ig') or '',
                 'campaign_name': rec.get('campaign_name') or rec.get('Campaign Name') or '',
-                'ad_name': rec.get('ad_name') or rec.get('Ad Name') or '',
+                'ad_name': rec.get('ad_name') or rec.get('Ad Name') or rec.get('ctig_ad_id') or '',
                 'adset_name': rec.get('adset_name') or rec.get('Adset Name') or '',
                 'form_name': rec.get('form_name') or rec.get('Form Name') or '',
-                'inbox_url': rec.get('inbox_url') or rec.get('Inbox URL') or '',
+                'inbox_url': rec.get('inbox_url') or rec.get('Inbox URL') or rec.get('source_url') or '',
                 'source_sheet': rec.get('_source_sheet_label', 'Google Sheet'),
+                'is_premium': is_premium_lead,
                 'raw_created_time': raw_time,
                 'created_time': self._parse_datetime_str(raw_time),
                 'sync_time': fields.Datetime.now(),
@@ -282,7 +321,7 @@ class CrmMasterLead(models.Model):
             'sheet2_records': sheet2_count,
             'inserted_records': inserted_count,
             'duplicates_found': duplicate_count,
-            'log_details': error_msg or 'Sync completed with zero errors.',
+            'log_details': (error_msg or 'Sync completed with zero errors.') + f"\nPremium Sheet Records Processed: {premium_sheet_count}",
         })
 
         return {
