@@ -153,12 +153,16 @@ class CrmLeadImportWizard(models.TransientModel):
                 ]
                 description_html = "<br/>".join(desc_parts)
 
+                # Format phone with country code if needed
+                formatted_phone = self.env['crm.master.lead']._format_phone_with_country_code(master_lead.phone or master_lead.whatsapp_number, master_lead.country_code)
+                formatted_mobile = self.env['crm.master.lead']._format_phone_with_country_code(master_lead.whatsapp_number or master_lead.phone, master_lead.country_code)
+
                 # Create Custom CRM Lead
                 crm_lead_vals = {
                     'name': master_lead.name or f"Lead from {master_lead.source_sheet or 'Google Sheets'}",
                     'partner_name': master_lead.name,
-                    'phone': master_lead.phone or master_lead.whatsapp_number,
-                    'mobile': master_lead.whatsapp_number or master_lead.phone,
+                    'phone': formatted_phone,
+                    'mobile': formatted_mobile,
                     'email': master_lead.email,
                     'city': master_lead.city,
                     'country_code': master_lead.country_code,

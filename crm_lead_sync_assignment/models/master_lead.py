@@ -56,8 +56,62 @@ class CrmMasterLead(models.Model):
         super(CrmMasterLead, self).init()
         try:
             self._auto_heal_master_leads()
+            self._auto_format_existing_phones()
         except Exception as e:
             _logger.error("Error in CrmMasterLead init auto heal: %s", str(e))
+
+    @api.model
+    def _format_phone_with_country_code(self, raw_phone, country_code=None):
+        if not raw_phone:
+            return ''
+        p_str = str(raw_phone).strip()
+        if not p_str:
+            return ''
+            
+        if 'e' in p_str.lower():
+            try:
+                p_str = str(int(float(p_str)))
+            except Exception:
+                pass
+
+        if p_str.startswith('p:') or p_str.startswith('+'):
+            return p_str
+
+        cc_str = ''
+        if country_code:
+            import re
+            cc_str = re.sub(r'\D', '', str(country_code))
+
+        if cc_str:
+            if not p_str.startswith(cc_str):
+                p_str = f"{cc_str}{p_str}"
+            return f"p:+{p_str}"
+        else:
+            import re
+            digits = re.sub(r'\D', '', p_str)
+            if len(digits) == 10:
+                return f"p:+91{digits}"
+            elif len(digits) > 10:
+                return f"p:+{digits}"
+            return p_str
+
+    @api.model
+    def _auto_format_existing_phones(self):
+        """Auto-formats existing master lead and custom CRM lead phone numbers with country code prefix."""
+        for lead in self.search([('phone', '!=', False)]):
+            if lead.phone and not (lead.phone.startswith('p:') or lead.phone.startswith('+')):
+                new_phone = self._format_phone_with_country_code(lead.phone, lead.country_code)
+                new_wa = self._format_phone_with_country_code(lead.whatsapp_number or lead.phone, lead.country_code)
+                lead.sudo().write({'phone': new_phone, 'whatsapp_number': new_wa})
+                if lead.crm_lead_id:
+                    lead.crm_lead_id.sudo().write({'phone': new_phone, 'mobile': new_wa})
+
+        crm_leads = self.env['custom.crm.lead'].search([('phone', '!=', False)])
+        for clead in crm_leads:
+            if clead.phone and not (clead.phone.startswith('p:') or clead.phone.startswith('+')):
+                new_phone = self._format_phone_with_country_code(clead.phone, clead.country_code)
+                new_mob = self._format_phone_with_country_code(clead.mobile or clead.phone, clead.country_code)
+                clead.sudo().write({'phone': new_phone, 'mobile': new_mob})
 
     @api.model
     def _auto_heal_master_leads(self):
@@ -114,11 +168,14 @@ class CrmMasterLead(models.Model):
             ]
             description_html = "<br/>".join(desc_parts)
 
+            formatted_phone = self._format_phone_with_country_code(master.phone or master.whatsapp_number, master.country_code)
+            formatted_mobile = self._format_phone_with_country_code(master.whatsapp_number or master.phone, master.country_code)
+
             crm_lead_vals = {
                 'name': master.name or f"Lead from {master.source_sheet or 'Google Sheets'}",
                 'partner_name': master.name,
-                'phone': master.phone or master.whatsapp_number,
-                'mobile': master.whatsapp_number or master.phone,
+                'phone': formatted_phone,
+                'mobile': formatted_mobile,
                 'email': master.email,
                 'city': master.city,
                 'country_code': master.country_code,
@@ -244,24 +301,15 @@ class CrmMasterLead(models.Model):
         for rec in records_to_process:
             full_name = rec.get('Name') or rec.get('screen_0_name_0') or rec.get('full_name') or rec.get('Full Name') or rec.get('name') or 'Lead'
             raw_phone = rec.get('Phone') or rec.get('phone_number') or rec.get('Phone Number') or rec.get('phone') or ''
-            phone = str(raw_phone).strip()
-            if 'e' in phone.lower():
-                try:
-                    phone = str(int(float(phone)))
-                except Exception:
-                    pass
-
             country_code = str(rec.get('CountryCode') or rec.get('country_code') or rec.get('Country Code') or '').strip()
             if country_code.endswith('.0'):
                 country_code = country_code[:-2]
-            email = str(rec.get('screen_0_email_1') or rec.get('email') or rec.get('Email') or '').strip()
-            whatsapp = str(rec.get('share_your_whatsapp_number') or rec.get('whatsapp_number') or rec.get('WhatsApp Number') or '').strip()
-            if 'e' in whatsapp.lower():
-                try:
-                    whatsapp = str(int(float(whatsapp)))
-                except Exception:
-                    pass
 
+            phone = self._format_phone_with_country_code(raw_phone, country_code)
+            raw_wa = rec.get('share_your_whatsapp_number') or rec.get('whatsapp_number') or rec.get('WhatsApp Number') or ''
+            whatsapp = self._format_phone_with_country_code(raw_wa, country_code) if raw_wa else phone
+
+            email = str(rec.get('screen_0_email_1') or rec.get('email') or rec.get('Email') or '').strip()
             is_premium_lead = bool(rec.get('_is_premium', False))
 
             check_phone = phone or whatsapp
