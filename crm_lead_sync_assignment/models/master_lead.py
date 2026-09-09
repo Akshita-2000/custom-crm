@@ -252,6 +252,8 @@ class CrmMasterLead(models.Model):
                     pass
 
             country_code = str(rec.get('CountryCode') or rec.get('country_code') or rec.get('Country Code') or '').strip()
+            if country_code.endswith('.0'):
+                country_code = country_code[:-2]
             email = str(rec.get('screen_0_email_1') or rec.get('email') or rec.get('Email') or '').strip()
             whatsapp = str(rec.get('share_your_whatsapp_number') or rec.get('whatsapp_number') or rec.get('WhatsApp Number') or '').strip()
             if 'e' in whatsapp.lower():

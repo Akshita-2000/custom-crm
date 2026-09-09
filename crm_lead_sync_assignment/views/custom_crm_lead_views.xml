@@ -74,6 +74,7 @@
                 <tree string="Custom CRM Pipeline" export_xlsx="0" decoration-info="stage == 'new'" decoration-warning="stage in ('contacted', 'not_pick_call', 'followup')" decoration-success="stage == 'won'" decoration-danger="stage in ('lost', 'junk')">
                     <field name="name" string="Lead Title"/>
                     <field name="partner_name" string="Full Name"/>
+                    <field name="country_code"/>
                     <field name="phone"/>
                     <field name="email"/>
                     <field name="city"/>
@@ -112,6 +113,7 @@
                         <group>
                             <group string="Contact Details">
                                 <field name="partner_name"/>
+                                <field name="country_code"/>
                                 <field name="phone"/>
                                 <field name="mobile"/>
                                 <field name="email"/>

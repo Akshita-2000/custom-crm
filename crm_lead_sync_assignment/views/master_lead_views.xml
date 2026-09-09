@@ -8,6 +8,7 @@
             <field name="arch" type="xml">
                 <tree string="Master Leads Repository" export_xlsx="0">
                     <field name="name" string="Full Name"/>
+                    <field name="country_code"/>
                     <field name="phone"/>
                     <field name="whatsapp_number"/>
                     <field name="email"/>
@@ -41,6 +42,7 @@
                         </div>
                         <group>
                             <group string="Contact Details">
+                                <field name="country_code"/>
                                 <field name="phone"/>
                                 <field name="whatsapp_number"/>
                                 <field name="email"/>
